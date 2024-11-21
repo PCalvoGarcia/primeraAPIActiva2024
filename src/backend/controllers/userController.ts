@@ -1,96 +1,65 @@
-import { deleteUserById, findUserById, getUsers, saveNewUser } from "../models/userModel.js";
-import { DeleteResult } from "../types/DeleteResult.js";
-import { User } from "../types/User.js";
+import { saveNewUser, getUsers, findUserById, deleteUserById, updateUserById } from "../models/userModel.js";
+import { User } from '../types/User.js';
 
 
-export async function newUser(user: User):Promise<string>{
+export async function newUser(user: User): Promise<any> {
     try {
-        const result = await saveNewUser(user);
-        return result;
-    } catch (error:any){//TODO: quitar el any
+        return await saveNewUser(user);
+    } catch (error: any) {
         if (error.code === "23505") {
             const columnMatch = error.detail.match(/Key \((.*?)\)=/);
             const columnName = columnMatch ? columnMatch[1] : 'campo';
-            return `El ${columnName} ya existe en la base de datos`;
+            return `El ${columnName} ya existe en la base de datos.`;
         }
-        return error;
+        return `Error al crear usuario: ${error.message}`;
     }
-      
 }
 
-export async function getAllUsers():Promise<string>{
-    
-    const result = await getUsers();
+
+export async function getAllUsers(): Promise<any> {
     try {
+        return await getUsers();
+    } catch (error: any) {
+        return `Error al obtener los usuarios: ${error.message}`;
+    }
+}
+
+
+export async function getUser(id: string): Promise<any> {
+    try {
+        const result = await findUserById(id);
+        if (!result) {
+            return `El usuario con ID ${id} no fue encontrado.`;
+        }
         return result;
-    } catch (error:any){//TODO: quitar el any
-        if (error.code === "42601") {
-            return "Sintaxixis incorrecta.";
-        }
-        if (error.code === "42P01" || error.code === "42703" || error.code === "42501") {
-            return "Error: No se pudo acceder a la tabla o columna. Verifique que exista y que tenga los permisos necesarios.";
-        }
-        if (result.length === 0) {
-            return `La lista de usuarios esta vacia.`;
-        }
-        return error;
+    } catch (error: any) {
+        return `Error al obtener el usuario: ${error.message}`;
     }
-
-    
 }
 
-export async function getUser(id:string):Promise<string>{
-    const result = await findUserById(id);
+  
+  export async function deleteUser(id: string): Promise<any> {
+    console.log(`${id}`);
     try {
+        const result = await deleteUserById(id);
         return result;
-    } catch (error:any){//TODO: quitar el any
-        if (error.code === "42601") {
-            return "Sintaxixis incorrecta.";
-        }
-        if (error.code === "42P01" || error.code === "42703") {
-            return "Error: No se pudo acceder a la tabla o columna. Verifique que exista y que tenga los permisos necesarios.";
-        }
-        if (result.length === 0) {
-            return `No se encontró el usuario con ID ${id}.`;
-        }
-        return error;
+    } catch (error) {
+      return new Error("Failed to delete user");
     }
+  }
+  
 
-    
-}
-
-export async function deleteUser(id:string):Promise<DeleteResult>{
-
-    const result = await deleteUserById(id);
+export async function updateUser(id: string, user: Partial<User>): Promise<any> {
     try {
-        if (result.rowsAffected === 0) {
-            return {
-                success: false,
-                message: `No se encontró el usuario con ID ${id}.`,
-                rowsAffected: 0
-            };
+        const result = await updateUserById(id, user);
+        if (!result) {
+            return `No se pudo actualizar. El usuario con ID ${id} no existe.`;
         }
-        return {
-            success: true,
-            message: `Usuario con ID ${id} eliminado exitosamente.`,
-            rowsAffected: result.rowsAffected ?? 1
-        };
-    } catch (error:any){//TODO: quitar el any
-        if (error.code === "23503") {
-            return {
-                success: false,
-                message: "Error: No se pudo acceder a la tabla o columna. Verifique que exista y que tenga los permisos necesarios.",
-                rowsAffected: 0
-            };
+        return result;
+    } catch (error: any) {
+        if (error.code === "23505") {
+            return `Ya existe un usuario con ese valor único en la base de datos.`;
         }
-        if (error.code === "42P01" || error.code === "42703") {
-            return {
-                success: false,
-                message: "Error: No se pudo acceder a la tabla o columna. Verifique que exista y que tenga los permisos necesarios.",
-                rowsAffected: 0
-            };
-        }
-        return error;
+        return `Error al actualizar el usuario: ${error.message}`;
     }
-
 }

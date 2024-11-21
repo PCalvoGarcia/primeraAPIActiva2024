@@ -1,6 +1,6 @@
 import pool from "../config/configDb.js";
 import { DeleteResult } from "../types/DeleteResult.js";
-import { User } from "../types/User.js";
+import { User } from '../types/User.js';
 
 
 export async function saveNewUser(user:User):Promise<any>{
@@ -46,3 +46,18 @@ export async function deleteUserById(id: string): Promise<DeleteResult> {
         };
     }
 }   
+
+export async function updateUserById(id: string, user: Partial<User>): Promise<any> {
+    const fields = Object.entries(user)
+        .filter(([key, value]) => value !== undefined)
+        .map(([key, value]) => `"${key}" = '${value}'`)
+        .join(", ");
+    
+    if (fields.length === 0) {
+        throw new Error("No hay campos para actualizar");
+    }
+
+    const queryString = `UPDATE "user" SET ${fields} WHERE "id" = ${id} RETURNING *`;
+    const result = await pool.query(queryString);
+    return result.rows.length > 0 ? result.rows[0] : null;
+}
