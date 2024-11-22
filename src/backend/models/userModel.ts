@@ -4,7 +4,7 @@ import { User } from '../types/User.js';
 
 
 export async function saveNewUser(user:User):Promise<any>{
-    const queryString = `INSERT INTO "User" ("username", "name", "first_surname", "password", "email") VALUES ('${user.userName}', '${user.name}', '${user.first_surname}', '${user.password}','${user.email}')`;
+    const queryString = `INSERT INTO "User" (username, name, first_surname, password, email) VALUES ('${user.userName}', '${user.name}', '${user.first_surname}', '${user.password}','${user.email}')`;
     const result = await pool.query(queryString);
     return result.rows;
 }
