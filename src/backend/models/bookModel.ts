@@ -3,9 +3,9 @@ import { DeleteResult } from "../types/DeleteResult";
 import { Book } from "../types/Book";
 
 export async function saveNewBook(book:Book):Promise<any>{
-    const queryString = `INSERT INTO "Book" ("title", "author", "description", "editorial", ) VALUES ('${book.title}', '${book.author}', '${book.description}', '${book.editorial}')`;
+    const queryString = `INSERT INTO "Book" (title,author,description, editorial ) VALUES ('${book.title}', '${book.author}', '${book.description}', '${book.editorial}')`;
     const result = await pool.query(queryString);
-    return result.rows;
+    return result.rows[0];
 }
 
 export async function getBooks():Promise<any>{  
@@ -47,16 +47,29 @@ export async function deleteBook(id: string): Promise<DeleteResult> {
 }   
 
 export async function updateBookById(id: string, book: Partial<Book>): Promise<any> {
-    try {
-        const result = await updateBookById(id, book);
-        if (!result) {
-            return `No se pudo actualizar. El libro con ID ${id} no existe.`;
+    if (book.title) {
+        const books: Book[] = await getBooks(); 
+        const titleExists = books.some(existingBook => 
+            existingBook.title === book.title && 
+            existingBook.id && 
+            existingBook.id.toString() !== id
+        );
+
+        if (titleExists) {
+            throw new Error("El título ya existe en otro libro");
         }
-        return result;
-    } catch (error: any) {
-        if (error.code === "23505") {
-            return `Ya existe un lirbo con ese valor único en la base de datos.`;
-        }
-        return `Error al actualizar el libro: ${error.message}`;
     }
+    const fields = Object.entries(book)
+        .filter(([key, value]) => value !== undefined)
+        .map(([key, value]) => `"${key}" = '${value}'`)
+        .join(", ");
+    
+    if (fields.length === 0) {
+        throw new Error("No hay campos para actualizar");
+    }
+
+    const queryString = `UPDATE "Book" SET ${fields} WHERE "id" = ${id} RETURNING *`;
+    const result = await pool.query(queryString);
+    return result.rows.length > 0 ? result.rows[0] : null;
+    
 }

@@ -11,7 +11,7 @@ export async function newBook (book: Book):Promise<string>{
     } catch (error:any){
         if (error.code === "23505") {
             const columnMatch = error.detail.match(/Key \((.*?)\)=/);
-            const columnName = columnMatch ? columnMatch[1] : 'campo';
+            const columnName = columnMatch ? columnMatch[1] : 'libro';
             return `El ${columnName} ya existe en la base de datos`;
         }
         return error;
@@ -96,17 +96,17 @@ export async function deleteBookById(id:string):Promise<DeleteResult>{
 
 }
 
-export async function updateBook(title: string, book: Partial<Book>): Promise<any> {
+export async function updateBook(id: string, book: Partial<Book>): Promise<any> {
     try {
-        const result = await updateBookById(title, book);
+        const result = await updateBookById(id, book);
         if (!result) {
-            return `No se pudo actualizar. El animal ${title} no existe.`;
+            return `No se pudo actualizar. El libro con este id(${id}) no existe.`;
         }
         return result;
     } catch (error: any) {
         if (error.code === "23505") {
-            return `Ya existe un animal con ese valor único en la base de datos.`;
+            return `Ya existe un libro con ese valor único en la base de datos.`;
         }
-        return `Error al actualizar el animal: ${error.message}`;
+        return `Error al actualizar el libro: ${error.message}`;
     }
 }

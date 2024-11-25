@@ -4,9 +4,9 @@ import { User } from '../types/User.js';
 
 
 export async function saveNewUser(user:User):Promise<any>{
-    const queryString = `INSERT INTO "User" (username, name, first_surname, password, email) VALUES ('${user.userName}', '${user.name}', '${user.first_surname}', '${user.password}','${user.email}')`;
+    const queryString = `INSERT INTO "User" (username, name, first_surname, password, email) VALUES ('${user.userName}','${user.name}','${user.first_surname}','${user.password}','${user.email}') RETURNING *`;
     const result = await pool.query(queryString);
-    return result.rows;
+    return result.rows[0];
 }
 
 export async function getUsers():Promise<any>{  
@@ -57,7 +57,7 @@ export async function updateUserById(id: string, user: Partial<User>): Promise<a
         throw new Error("No hay campos para actualizar");
     }
 
-    const queryString = `UPDATE "user" SET ${fields} WHERE "id" = ${id} RETURNING *`;
+    const queryString = `UPDATE "User" SET ${fields} WHERE "id" = ${id} RETURNING *`;
     const result = await pool.query(queryString);
     return result.rows.length > 0 ? result.rows[0] : null;
 }

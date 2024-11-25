@@ -16,13 +16,13 @@ userRouter.get("/:id", validateNumericParams, async (req: Express.Request, res: 
   });
  
 userRouter.post("/", async (req: Express.Request, res: Express.Response) => {
-    const user: User = {userName: req.body.username, name: req.body.name, first_surname: req.body.surname, email: req.body.email, password: req.body.password};
+    const user: User = {userName: req.body.username, name: req.body.name, first_surname: req.body.first_surname, email: req.body.email, password: req.body.password};
     const result = await newUser(user);
     res.send(result);
 });
 
 userRouter.put("/:id", validateNumericParams, async (req: Express.Request, res: Express.Response) => {
-    const user: Partial<User> = {userName: req.body.username, name: req.body.name, first_surname: req.body.surname, email: req.body.email, password: req.body.password};
+    const user: Partial<User> = {userName: req.body.username, name: req.body.name, first_surname: req.body.first_surname, email: req.body.email, password: req.body.password};
     const result = await updateUser(req.params.id, user);
     res.send(result);
 });
